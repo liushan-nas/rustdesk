@@ -13,7 +13,7 @@ use hbb_common::{
     allow_err,
     anyhow::{self, bail},
     config::{
-        self, keys::*, option2bool, use_ws, Config, CONNECT_TIMEOUT, REG_INTERVAL, RENDEZVOUS_PORT,
+        self, keys::*, option2bool, use_ws, Config, CONNECT_TIMEOUT, REG_INTERVAL, RENDEZVOUS_PORT, RELAY_SERVERS,
     },
     futures::future::join_all,
     log,
@@ -709,6 +709,9 @@ impl RendezvousMediator {
         }
         if relay_server.is_empty() {
             relay_server = crate::increase_port(&self.host, 1);
+        }
+        if relay_server.is_empty() {
+            relay_server = RELAY_SERVERS.iter().next().unwrap_or(&"").to_string();
         }
         relay_server
     }
