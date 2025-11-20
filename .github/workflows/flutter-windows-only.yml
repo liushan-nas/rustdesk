@@ -114,8 +114,20 @@ jobs:
           Expand-Archive -Path usbmmidd_v2.zip -DestinationPath ./
           if (Test-Path ./usbmmidd_v2) { Move-Item -Path ./usbmmidd_v2 -Destination ./rustdesk -Force }
 
+      - name: Build self-extracted executable
+        shell: bash
+        if: env.UPLOAD_ARTIFACT == 'true'
+        run: |
+          sed -i '/dpiAware/d' res/manifest.xml
+          pushd ./libs/portable
+          pip3 install -r requirements.txt
+          python3 ./generate.py -f ../../rustdesk/ -o . -e ../../rustdesk/rustdesk.exe
+          popd
+          mkdir -p ./SignOutput
+          mv ./target/release/rustdesk-portable-packer.exe ./SignOutput/rustdesk-${{ env.VERSION }}-x86_64.exe
+
       - name: Upload artifacts
         uses: actions/upload-artifact@master
         with:
           name: rustdesk-windows-x64
-          path: rustdesk
+          path: ./SignOutput/rustdesk-${{ env.VERSION }}-x86_64.exe
