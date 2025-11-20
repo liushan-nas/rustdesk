@@ -22,20 +22,9 @@ jobs:
   generate-bridge:
     uses: ./.github/workflows/bridge.yml
 
-  build-RustDeskTempTopMostWindow:
-    uses: ./.github/workflows/third-party-RustDeskTempTopMostWindow.yml
-    with:
-      upload-artifact: true
-      target: windows-2022
-      configuration: Release
-      platform: x64
-      target_version: Windows10
-    strategy:
-      fail-fast: false
-
   build-for-windows-flutter:
     name: Windows x64 Flutter Build
-    needs: [build-RustDeskTempTopMostWindow, generate-bridge]
+    needs: [generate-bridge]
     runs-on: windows-2022
     steps:
       - name: Export GitHub Actions cache environment variables
@@ -55,12 +44,6 @@ jobs:
         with:
           name: bridge-artifact
           path: ./
-
-      - name: Restore RustDeskTempTopMostWindow
-        uses: actions/download-artifact@master
-        with:
-          name: RustDeskTempTopMostWindow
-          path: ./flutter/windows/runner
 
       - name: Setup vcpkg with Github Actions binary cache
         uses: lukka/run-vcpkg@v11
