@@ -108,11 +108,11 @@ jobs:
         shell: powershell
         run: |
           python3 .\build.py --portable --hwcodec --flutter --vram --skip-portable-pack
-          mv ./flutter/build/windows/x64/runner/Release ./rustdesk
+          Move-Item -Path ./flutter/build/windows/x64/runner/Release -Destination ./rustdesk -Force
 
           Invoke-WebRequest -Uri https://github.com/rustdesk-org/rdev/releases/download/usbmmidd_v2/usbmmidd_v2.zip -OutFile usbmmidd_v2.zip
           Expand-Archive -Path usbmmidd_v2.zip -DestinationPath ./
-          mv ./usbmmidd_v2 ./rustdesk || true
+          if (Test-Path ./usbmmidd_v2) { Move-Item -Path ./usbmmidd_v2 -Destination ./rustdesk -Force }
 
       - name: Upload artifacts
         uses: actions/upload-artifact@master
