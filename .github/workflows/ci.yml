@@ -138,7 +138,11 @@ jobs:
 
     - name: Install vcpkg dependencies
       run: |
-        $VCPKG_ROOT/vcpkg install --x-install-root="$VCPKG_ROOT/installed"
+        case ${{ matrix.job.target }} in
+          x86_64-pc-windows-msvc)
+            $VCPKG_ROOT/vcpkg install --triplet x64-windows-static --x-install-root="$VCPKG_ROOT/installed"
+            ;;
+        esac
       shell: bash
 
     - name: Install Rust toolchain
