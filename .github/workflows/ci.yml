@@ -167,11 +167,6 @@ jobs:
         command: build
         args: --locked --target=${{ matrix.job.target }}
 
-    - name: clean
-      shell: bash
-      run: |
-        cargo clean
-
     # - name: Strip debug information from executable
     #   id: strip
     #   shell: bash
@@ -234,10 +229,3 @@ jobs:
         use-cross: ${{ matrix.job.use-cross }}
         command: test
         args: --locked --target=${{ matrix.job.target }} ${{ steps.test-options.outputs.CARGO_TEST_OPTIONS}}
-
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      if: matrix.job.target == 'x86_64-pc-windows-msvc'
-      with:
-        name: rustdesk-windows-x64
-        path: target/x86_64-pc-windows-msvc/release/rustdesk.exe
