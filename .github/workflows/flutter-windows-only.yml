@@ -84,8 +84,7 @@ jobs:
         working-directory: flutter
 
       - name: Upload Windows artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@master
         with:
           name: rustdesk-windows-x64
           path: flutter/build/windows/x64/runner/Release/
-          if-no-files-found: warn
