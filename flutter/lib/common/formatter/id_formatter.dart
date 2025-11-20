@@ -41,18 +41,8 @@ String formatID(String id) {
     id2 = id2.substring(0, id2.length - 2);
   }
   if (int.tryParse(id2) == null) return id;
-  String newID = '';
-  if (id2.length <= 3) {
-    newID = id2;
-  } else {
-    var n = id2.length;
-    var a = n % 3 != 0 ? n % 3 : 3;
-    newID = id2.substring(0, a);
-    for (var i = a; i < n; i += 3) {
-      newID += " ${id2.substring(i, i + 3)}";
-    }
-  }
-  return newID + suffix;
+  // Return ID without spaces
+  return id2 + suffix;
 }
 
 String trimID(String id) {

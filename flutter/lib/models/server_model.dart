@@ -36,7 +36,7 @@ class ServerModel with ChangeNotifier {
   int _connectStatus = 0; // Rendezvous Server status
   String _verificationMethod = "";
   String _temporaryPasswordLength = "";
-  bool _allowNumericOneTimePassword = false;
+  bool _allowNumericOneTimePassword = true;
   String _approveMode = "";
   int _zeroClientLengthCounter = 0;
 

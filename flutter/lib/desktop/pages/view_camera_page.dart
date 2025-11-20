@@ -360,7 +360,7 @@ class _ViewCameraPageState extends State<ViewCameraPage>
     super.build(context);
     return WillPopScope(
         onWillPop: () async {
-          clientClose(sessionId, _ffi);
+          clientClose(sessionId, _ffi.dialogManager);
           return false;
         },
         child: MultiProvider(providers: [
@@ -527,7 +527,7 @@ class _ImagePaintState extends State<ImagePaint> {
 
     bool isViewOriginal() => c.viewStyle.style == kRemoteViewStyleOriginal;
 
-    if (c.imageOverflow.isTrue && c.scrollStyle != ScrollStyle.scrollauto) {
+    if (c.imageOverflow.isTrue && c.scrollStyle == ScrollStyle.scrollbar) {
       final paintWidth = c.getDisplayWidth() * s;
       final paintHeight = c.getDisplayHeight() * s;
       final paintSize = Size(paintWidth, paintHeight);
