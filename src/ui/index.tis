@@ -3,7 +3,7 @@ stdout.println("current platform:", OS);
 stdout.println("is_xfce: ", is_xfce);
 
 // html min-width, min-height not working on mac, below works for all
-view.windowMinSize = (scaleIt(400), scaleIt(280));
+view.windowMinSize = (scaleIt(560), scaleIt(300));
 
 var app;
 var tmp = handler.get_connect_status();
@@ -1136,7 +1136,7 @@ function self.ready() {
             view.move(r[0], r[1], r[2], r[3]);
         }
     } else {
-        centerize(scaleIt(500), scaleIt(400));
+        centerize(scaleIt(800), scaleIt(600));
     }
     if (!handler.get_remote_id()) {
         view.focus = $(#remote_id);

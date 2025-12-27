@@ -44,7 +44,7 @@ import 'package:flutter_hbb/native/win32.dart'
     if (dart.library.html) 'package:flutter_hbb/web/win32.dart';
 import 'package:flutter_hbb/native/common.dart'
     if (dart.library.html) 'package:flutter_hbb/web/common.dart';
-import 'package:flutter_hbb/utils/http_service.dart' as http;
+import 'package:http/http.dart' as http;
 
 final globalKey = GlobalKey<NavigatorState>();
 final navigationBarKey = GlobalKey();
@@ -1681,12 +1681,13 @@ class LastWindowPosition {
       this.offsetHeight, this.isMaximized, this.isFullscreen);
 
   bool equals(LastWindowPosition other) {
-    return ((width == other.width) &&
-        (height == other.height) &&
-        (offsetWidth == other.offsetWidth) &&
-        (offsetHeight == other.offsetHeight) &&
-        (isMaximized == other.isMaximized) &&
-        (isFullscreen == other.isFullscreen));
+    return (
+      (width == other.width) &&
+      (height == other.height) &&
+      (offsetWidth == other.offsetWidth) &&
+      (offsetHeight == other.offsetHeight) &&
+      (isMaximized == other.isMaximized) &&
+      (isFullscreen == other.isFullscreen));
   }
 
   Map<String, dynamic> toJson() {
@@ -1814,8 +1815,7 @@ Future<void> saveWindowPosition(WindowType type,
 
   final WindowKey key = (type: type, windowId: windowId);
 
-  final bool haveNewWindowPosition =
-      (_lastWindowPosition == null) || !pos.equals(_lastWindowPosition!);
+  final bool haveNewWindowPosition = (_lastWindowPosition == null) || !pos.equals(_lastWindowPosition!);
   final bool isPreviousNewWindowPositionPending = _saveWindowDebounce.isRunning;
 
   if (haveNewWindowPosition || isPreviousNewWindowPositionPending) {
@@ -1841,11 +1841,10 @@ Future<void> _saveWindowPositionActual(WindowKey key) async {
     await bind.setLocalFlutterOption(
         k: windowFramePrefix + key.type.name, v: pos.toString());
 
-    if ((key.type == WindowType.RemoteDesktop ||
-            key.type == WindowType.ViewCamera) &&
+    if ((key.type == WindowType.RemoteDesktop || key.type == WindowType.ViewCamera) &&
         key.windowId != null) {
-      await _saveSessionWindowPosition(key.type, key.windowId!,
-          pos.isMaximized ?? false, pos.isFullscreen ?? false, pos);
+      await _saveSessionWindowPosition(
+          key.type, key.windowId!, pos.isMaximized ?? false, pos.isFullscreen ?? false, pos);
     }
   }
 }
@@ -1889,10 +1888,10 @@ Future<Size> _adjustRestoreMainWindowSize(double? width, double? height) async {
   const double maxHeight = 6480;
 
   final defaultWidth =
-      ((isDesktop || isWebDesktop) ? 1280 : kMobileDefaultDisplayWidth)
+      ((isDesktop || isWebDesktop) ? 280 : kMobileDefaultDisplayWidth)
           .toDouble();
   final defaultHeight =
-      ((isDesktop || isWebDesktop) ? 720 : kMobileDefaultDisplayHeight)
+      ((isDesktop || isWebDesktop) ? 160 : kMobileDefaultDisplayHeight)
           .toDouble();
   double restoreWidth = width ?? defaultWidth;
   double restoreHeight = height ?? defaultHeight;
@@ -2007,6 +2006,15 @@ Future<bool> restoreWindowPosition(WindowType type,
     }
     isRemotePeerPos = pos != null;
   }
+  // Skip loading saved window position for main window
+  if (type == WindowType.Main) {
+    debugPrint("Using fixed window size for main window.");
+    if (isWindows || isLinux) {
+      await windowManager.center();
+    }
+    return true;
+  }
+  
   pos ??= bind.getLocalFlutterOption(k: windowFramePrefix + type.name);
 
   var lpos = LastWindowPosition.loadFromString(pos);
@@ -2014,13 +2022,7 @@ Future<bool> restoreWindowPosition(WindowType type,
     debugPrint("No window position saved, trying to center the window.");
     switch (type) {
       case WindowType.Main:
-        // Center the main window only if no position is saved (on first run).
-        if (isWindows || isLinux) {
-          await windowManager.center();
-        }
-        // For MacOS, the window is already centered by default.
-        // See https://github.com/rustdesk/rustdesk/blob/9b9276e7524523d7f667fefcd0694d981443df0e/flutter/macos/Runner/Base.lproj/MainMenu.xib#L333
-        // If `<windowPositionMask>` in `<window>` is not set, the window will be centered.
+        // This case is now skipped above
         break;
       default:
         // No need to change the position of a sub window if no position is saved,
@@ -2913,7 +2915,7 @@ String getWindowName({WindowType? overrideType}) {
   final name = bind.mainGetAppNameSync();
   switch (overrideType ?? kWindowType) {
     case WindowType.Main:
-      return name;
+      return "云核设计";
     case WindowType.FileTransfer:
       return "File Transfer - $name";
     case WindowType.ViewCamera:
@@ -2949,7 +2951,7 @@ Future<void> updateSystemWindowTheme() async {
 ///
 /// Note: not found a general solution for rust based AVFoundation bingding.
 /// [AVFoundation] crate has compile error.
-const kMacOSPermChannel = MethodChannel("org.rustdesk.rustdesk/host");
+const kMacOSPermChannel = MethodChannel("org.rustdesk.rustdesk/macos");
 
 enum PermissionAuthorizeType {
   undetermined,

@@ -39,14 +39,7 @@ def view(
     while True:
         params["current"] = current
         response = requests.get(f"{url}/api/devices", headers=headers, params=params)
-        if response.status_code != 200:
-            print(f"Error: HTTP {response.status_code} - {response.text}")
-            exit(1)
-        
         response_json = response.json()
-        if "error" in response_json:
-            print(f"Error: {response_json['error']}")
-            exit(1)
 
         data = response_json.get("data", [])
 
@@ -69,18 +62,14 @@ def view(
 
 
 def check(response):
-    if response.status_code != 200:
-        print(f"Error: HTTP {response.status_code} - {response.text}")
-        exit(1)
-    
-    try:
-        response_json = response.json()
-        if "error" in response_json:
-            print(f"Error: {response_json['error']}")
-            exit(1)
-        return response_json
-    except ValueError:
-        return response.text or "Success"
+    if response.status_code == 200:
+        try:
+            response_json = response.json()
+            return response_json
+        except ValueError:
+            return response.text or "Success"
+    else:
+        return "Failed", response.status_code, response.text
 
 
 def disable(url, token, guid, id):

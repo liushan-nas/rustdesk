@@ -204,19 +204,6 @@ pub fn use_texture_render() -> bool {
 }
 
 #[inline]
-pub fn is_option_fixed(key: &str) -> bool {
-    config::OVERWRITE_DISPLAY_SETTINGS
-        .read()
-        .unwrap()
-        .contains_key(key)
-        || config::OVERWRITE_LOCAL_SETTINGS
-            .read()
-            .unwrap()
-            .contains_key(key)
-        || config::OVERWRITE_SETTINGS.read().unwrap().contains_key(key)
-}
-
-#[inline]
 pub fn get_local_option(key: String) -> String {
     crate::get_local_option(&key)
 }
@@ -465,8 +452,10 @@ pub fn install_options() -> String {
 pub fn get_socks() -> Vec<String> {
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     let s = ipc::get_socks();
-    #[cfg(any(target_os = "android", target_os = "ios"))]
+    #[cfg(target_os = "android")]
     let s = Config::get_socks();
+    #[cfg(target_os = "ios")]
+    let s: Option<config::Socks5Server> = None;
     match s {
         None => Vec::new(),
         Some(s) => {
@@ -488,7 +477,7 @@ pub fn set_socks(proxy: String, username: String, password: String) {
     };
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     ipc::set_socks(socks).ok();
-    #[cfg(any(target_os = "android", target_os = "ios"))]
+    #[cfg(target_os = "android")]
     {
         let _nat = crate::CheckTestNatType::new();
         if socks.proxy.is_empty() {
@@ -496,11 +485,8 @@ pub fn set_socks(proxy: String, username: String, password: String) {
         } else {
             Config::set_socks(Some(socks));
         }
-        log::info!("socks updated");
-    }
-    #[cfg(target_os = "android")]
-    {
         crate::RendezvousMediator::restart();
+        log::info!("socks updated");
     }
 }
 

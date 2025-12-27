@@ -2,8 +2,8 @@ lazy_static::lazy_static! {
 pub static ref T: std::collections::HashMap<&'static str, &'static str> =
     [
         ("Status", "状态"),
-        ("Your Desktop", "你的桌面"),
-        ("desk_tip", "你的桌面可以通过下面的 ID 和密码访问。"),
+        ("Your Desktop", "云核设计"),
+        ("desk_tip", "需要远程帮助,请联系客服。"),
         ("Password", "密码"),
         ("Ready", "就绪"),
         ("Established", "已建立"),
@@ -170,7 +170,7 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Local Port", "本地端口"),
         ("Local Address", "当前地址"),
         ("Change Local Port", "修改本地端口"),
-        ("setup_server_tip", "如果需要更快连接速度，你可以选择自建服务器"),
+        ("setup_server_tip", "立即联系技术支持"),
         ("Too short, at least 6 characters.", "太短了，至少 6 个字符"),
         ("The confirmation is not identical.", "两次输入不匹配"),
         ("Permissions", "权限"),
@@ -721,13 +721,5 @@ pub static ref T: std::collections::HashMap<&'static str, &'static str> =
         ("Show virtual joystick", "显示虚拟摇杆"),
         ("Edit note", "编辑备注"),
         ("Alias", "别名"),
-        ("ScrollEdge", "边缘滚动"),
-        ("Allow insecure TLS fallback", "允许回退到不安全的 TLS 连接"),
-        ("allow-insecure-tls-fallback-tip", "默认情况下，对于使用 TLS 的协议，RustDesk 会验证服务器证书。\n启用此选项后，在验证失败时，RustDesk 将转为跳过验证步骤并继续连接。"),
-        ("Disable UDP", "禁用 UDP"),
-        ("disable-udp-tip", "控制是否仅使用TCP。\n启用此选项后，RustDesk 将不再使用UDP 21116，而是使用TCP 21116。"),
-        ("server-oss-not-support-tip", "注意：RustDesk 开源服务器(OSS server) 不包含此功能。"),
-        ("input note here", "输入备注"),
-        ("note-at-conn-end-tip", "在连接结束时请求备注"),
     ].iter().cloned().collect();
 }

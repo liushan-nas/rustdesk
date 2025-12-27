@@ -149,18 +149,14 @@ def enhance_audit_data(data, audit_type):
 
 def check_response(response):
     """Check API response and return result"""
-    if response.status_code != 200:
-        print(f"Error: HTTP {response.status_code} - {response.text}")
-        exit(1)
-    
-    try:
-        response_json = response.json()
-        if "error" in response_json:
-            print(f"Error: {response_json['error']}")
-            exit(1)
-        return response_json
-    except ValueError:
-        return response.text or "Success"
+    if response.status_code == 200:
+        try:
+            response_json = response.json()
+            return response_json
+        except ValueError:
+            return response.text or "Success"
+    else:
+        return "Failed", response.status_code, response.text
 
 
 def view_audits_common(url, token, endpoint, filters=None, page_size=None, current=None, 
@@ -220,7 +216,7 @@ def view_audits_common(url, token, endpoint, filters=None, page_size=None, curre
             string_params[k] = v
 
     response = requests.get(f"{url}/api/audits/{endpoint}", headers=headers, params=string_params)
-    response_json = check_response(response)
+    response_json = response.json()
     
     # Enhance the data with readable formats
     data = enhance_audit_data(response_json.get("data", []), endpoint)

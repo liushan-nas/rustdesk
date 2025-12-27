@@ -400,8 +400,6 @@ Future<bool?> loginDialog() async {
   String? passwordMsg;
   var isInProgress = false;
   final RxString curOP = ''.obs;
-  // Track hover state for the close icon
-  bool isCloseHovered = false;
 
   final loginOptions = [].obs;
   Future.delayed(Duration.zero, () async {
@@ -559,27 +557,21 @@ Future<bool?> loginDialog() async {
         Text(
           translate('Login'),
         ).marginOnly(top: MyTheme.dialogPadding),
-        MouseRegion(
-          onEnter: (_) => setState(() => isCloseHovered = true),
-          onExit: (_) => setState(() => isCloseHovered = false),
-          child: InkWell(
-            child: Icon(
-              Icons.close,
-              size: 25,
-              // No need to handle the branch of null.
-              // Because we can ensure the color is not null when debug.
-              color: isCloseHovered
-                  ? Colors.white
-                  : Theme.of(context)
-                      .textTheme
-                      .titleLarge
-                      ?.color
-                      ?.withOpacity(0.55),
-            ),
-            onTap: onDialogCancel,
-            hoverColor: Colors.red,
-            borderRadius: BorderRadius.circular(5),
+        InkWell(
+          child: Icon(
+            Icons.close,
+            size: 25,
+            // No need to handle the branch of null.
+            // Because we can ensure the color is not null when debug.
+            color: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.color
+                ?.withOpacity(0.55),
           ),
+          onTap: onDialogCancel,
+          hoverColor: Colors.red,
+          borderRadius: BorderRadius.circular(5),
         ).marginOnly(top: 10, right: 15),
       ],
     );

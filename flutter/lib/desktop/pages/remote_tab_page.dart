@@ -80,15 +80,7 @@ class _ConnectionTabPageState extends State<ConnectionTabPage> {
         label: peerId!,
         selectedIcon: selectedIcon,
         unselectedIcon: unselectedIcon,
-        onTabCloseButton: () async {
-          if (await desktopTryShowTabAuditDialogCloseCancelled(
-            id: peerId!,
-            tabController: tabController,
-          )) {
-            return;
-          }
-          tabController.closeBy(peerId!);
-        },
+        onTabCloseButton: () => tabController.closeBy(peerId),
         page: RemotePage(
           key: ValueKey(peerId),
           id: peerId!,
@@ -324,13 +316,7 @@ class _ConnectionTabPageState extends State<ConnectionTabPage> {
           translate('Close'),
           style: style,
         ),
-        proc: () async {
-          if (await desktopTryShowTabAuditDialogCloseCancelled(
-            id: key,
-            tabController: tabController,
-          )) {
-            return;
-          }
+        proc: () {
           tabController.closeBy(key);
           cancelFunc();
         },
@@ -383,14 +369,6 @@ class _ConnectionTabPageState extends State<ConnectionTabPage> {
 
   Future<bool> handleWindowCloseButton() async {
     final connLength = tabController.length;
-    if (connLength == 1) {
-      if (await desktopTryShowTabAuditDialogCloseCancelled(
-        id: tabController.state.value.tabs[0].key,
-        tabController: tabController,
-      )) {
-        return false;
-      }
-    }
     if (connLength <= 1) {
       tabController.clear();
       return true;
@@ -445,15 +423,7 @@ class _ConnectionTabPageState extends State<ConnectionTabPage> {
         label: id,
         selectedIcon: selectedIcon,
         unselectedIcon: unselectedIcon,
-        onTabCloseButton: () async {
-          if (await desktopTryShowTabAuditDialogCloseCancelled(
-            id: id,
-            tabController: tabController,
-          )) {
-            return;
-          }
-          tabController.closeBy(id);
-        },
+        onTabCloseButton: () => tabController.closeBy(id),
         page: RemotePage(
           key: ValueKey(id),
           id: id,

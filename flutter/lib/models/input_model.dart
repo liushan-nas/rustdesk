@@ -42,7 +42,8 @@ class CanvasCoords {
       'scale': scale,
       'scrollX': scrollX,
       'scrollY': scrollY,
-      'scrollStyle': scrollStyle.toJson(),
+      'scrollStyle':
+          scrollStyle == ScrollStyle.scrollauto ? 'scrollauto' : 'scrollbar',
       'size': {
         'w': size.width,
         'h': size.height,
@@ -57,7 +58,9 @@ class CanvasCoords {
     model.scale = json['scale'];
     model.scrollX = json['scrollX'];
     model.scrollY = json['scrollY'];
-    model.scrollStyle = ScrollStyle.fromJson(json['scrollStyle'], ScrollStyle.scrollauto);
+    model.scrollStyle = json['scrollStyle'] == 'scrollauto'
+        ? ScrollStyle.scrollauto
+        : ScrollStyle.scrollbar;
     model.size = Size(json['size']['w'], json['size']['h']);
     return model;
   }
@@ -372,7 +375,6 @@ class InputModel {
   double get devicePixelRatio => parent.target!.canvasModel.devicePixelRatio;
   bool get isViewCamera => parent.target!.connType == ConnType.viewCamera;
   int get trackpadSpeed => _trackpadSpeed;
-  bool get useEdgeScroll => parent.target!.canvasModel.scrollStyle == ScrollStyle.scrolledge;
 
   InputModel(this.parent) {
     sessionId = parent.target!.sessionId;
@@ -886,7 +888,7 @@ class InputModel {
       isPhysicalMouse.value = true;
     }
     if (isPhysicalMouse.value) {
-      handleMouse(_getMouseEvent(e, _kMouseEventMove), e.position, edgeScroll: useEdgeScroll);
+      handleMouse(_getMouseEvent(e, _kMouseEventMove), e.position);
     }
   }
 
@@ -1074,7 +1076,7 @@ class InputModel {
       _queryOtherWindowCoords = false;
     }
     if (isPhysicalMouse.value) {
-      handleMouse(_getMouseEvent(e, _kMouseEventMove), e.position, edgeScroll: useEdgeScroll);
+      handleMouse(_getMouseEvent(e, _kMouseEventMove), e.position);
     }
   }
 
@@ -1123,7 +1125,7 @@ class InputModel {
   void refreshMousePos() => handleMouse({
         'buttons': 0,
         'type': _kMouseEventMove,
-      }, lastMousePos, edgeScroll: useEdgeScroll);
+      }, lastMousePos);
 
   void tryMoveEdgeOnExit(Offset pos) => handleMouse(
         {
@@ -1230,7 +1232,6 @@ class InputModel {
     Offset offset, {
     bool onExit = false,
     bool moveCanvas = true,
-    bool edgeScroll = false,
   }) {
     if (isViewCamera) return null;
     double x = offset.dx;
@@ -1272,7 +1273,6 @@ class InputModel {
       onExit: onExit,
       buttons: evt['buttons'],
       moveCanvas: moveCanvas,
-      edgeScroll: edgeScroll,
     );
     if (pos == null) {
       return null;
@@ -1301,10 +1301,9 @@ class InputModel {
     Offset offset, {
     bool onExit = false,
     bool moveCanvas = true,
-    bool edgeScroll = false,
   }) {
     final evtToPeer =
-        processEventToPeer(evt, offset, onExit: onExit, moveCanvas: moveCanvas, edgeScroll: edgeScroll);
+        processEventToPeer(evt, offset, onExit: onExit, moveCanvas: moveCanvas);
     if (evtToPeer != null) {
       bind.sessionSendMouse(
           sessionId: sessionId, msg: json.encode(modify(evtToPeer)));
@@ -1321,7 +1320,6 @@ class InputModel {
     bool onExit = false,
     int buttons = kPrimaryMouseButton,
     bool moveCanvas = true,
-    bool edgeScroll = false,
   }) {
     final ffiModel = parent.target!.ffiModel;
     CanvasCoords canvas =
@@ -1350,16 +1348,8 @@ class InputModel {
 
     y -= CanvasModel.topToEdge;
     x -= CanvasModel.leftToEdge;
-    if (isMove) {
-      final canvasModel = parent.target!.canvasModel;
-
-      if (edgeScroll) {
-        canvasModel.edgeScrollMouse(x, y);
-      } else if (moveCanvas) {
-        canvasModel.moveDesktopMouse(x, y);
-      }
-
-      canvasModel.updateLocalCursor(x, y);
+    if (isMove && moveCanvas) {
+      parent.target!.canvasModel.moveDesktopMouse(x, y);
     }
 
     return _handlePointerDevicePos(
@@ -1422,7 +1412,7 @@ class InputModel {
     var nearBottom = (canvas.size.height - y) < nearThr;
     final imageWidth = rect.width * canvas.scale;
     final imageHeight = rect.height * canvas.scale;
-    if (canvas.scrollStyle != ScrollStyle.scrollauto) {
+    if (canvas.scrollStyle == ScrollStyle.scrollbar) {
       x += imageWidth * canvas.scrollX;
       y += imageHeight * canvas.scrollY;
 
