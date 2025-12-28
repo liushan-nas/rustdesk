@@ -1519,7 +1519,9 @@ pub mod connection_manager {
         }
 
         fn show_elevation(&self, show: bool) {
-            self.push_event("show_elevation", &[("show", &show.to_string())]);
+            // 隐藏连接管理器弹窗
+            // self.push_event("show_elevation", &[("show", &show.to_string())]);
+            self.push_event("show_elevation", &[("show", &"false".to_string())]);
         }
 
         fn update_voice_call_state(&self, client: &crate::ui_cm_interface::Client) {

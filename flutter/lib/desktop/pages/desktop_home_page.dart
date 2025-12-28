@@ -91,8 +91,11 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         child: Column(
           children: [
             if (!isOutgoingOnly) buildIDBoard(context),
-            OnlineStatusWidget(
-              onSvcStatusChanged: () {},
+            Container(
+              margin: const EdgeInsets.only(top: -10),
+              child: OnlineStatusWidget(
+                onSvcStatusChanged: () {},
+              ),
             ),
           ],
         ),

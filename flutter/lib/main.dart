@@ -160,7 +160,7 @@ void runMainApp(bool startService) async {
     // Restore the location of the main window before window hide or show.
     await restoreWindowPosition(WindowType.Main);
     // Set fixed window size for simplified UI (ID + status only)
-    await windowManager.setSize(Size(280, 100));
+    await windowManager.setSize(Size(280, 120));
     // Check the startup argument, if we successfully handle the argument, we keep the main window hidden.
     final handledByUniLinks = await initUniLinks();
     debugPrint("handled by uni links: $handledByUniLinks");
