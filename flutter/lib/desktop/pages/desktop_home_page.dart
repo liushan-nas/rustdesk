@@ -104,26 +104,13 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     final model = gFFI.serverModel;
     final copyHover = false.obs;
     return Container(
-      margin: const EdgeInsets.only(left: 20, right: 11, top: 10, bottom: 10),
+      margin: const EdgeInsets.only(left: 15, right: 15, top: 8, bottom: 5),
       color: Colors.white,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 70,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: Text(
-                "本机ID:",
-                style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey[600]),
-              ),
-            ),
-          ),
-          SizedBox(width: 15),
-          SizedBox(
-            width: 120,
+          Expanded(
             child: GestureDetector(
               onDoubleTap: () {
                 Clipboard.setData(
@@ -135,34 +122,38 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                 child: TextFormField(
                   controller: model.serverId,
                   readOnly: true,
+                  textAlign: TextAlign.center,
                   decoration: InputDecoration(
                     border: InputBorder.none,
-                    contentPadding:
-                        EdgeInsets.only(top: 5, bottom: 5),
+                    contentPadding: EdgeInsets.zero,
                     filled: true,
                     fillColor: Colors.white,
                   ),
-                  style: TextStyle(fontSize: 16, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                    letterSpacing: 2,
+                  ),
                 ).workaroundFreezeLinuxMint(),
               ),
             ),
           ),
-          SizedBox(width: 8),
+          SizedBox(width: 5),
           MouseRegion(
             onEnter: (_) => copyHover.value = true,
             onExit: (_) => copyHover.value = false,
             child: GestureDetector(
               onTap: () {
-                final text = "本机ID:${model.serverId.text}";
-                Clipboard.setData(ClipboardData(text: text));
+                Clipboard.setData(ClipboardData(text: model.serverId.text));
                 showToast(translate("Copied"));
               },
               child: Obx(() => Icon(
                 Icons.copy,
-                size: 18,
+                size: 20,
                 color: copyHover.value
                     ? Colors.blue
-                    : Colors.grey[300],
+                    : Colors.grey[400],
               )),
             ),
           ),
