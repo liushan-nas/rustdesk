@@ -91,7 +91,6 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         child: Column(
           children: [
             if (!isOutgoingOnly) buildIDBoard(context),
-            if (!isOutgoingOnly) buildPasswordBoard(context),
             OnlineStatusWidget(
               onSvcStatusChanged: () {},
             ),
@@ -154,7 +153,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
             onExit: (_) => copyHover.value = false,
             child: GestureDetector(
               onTap: () {
-                final text = "本机ID:${model.serverId.text}\n随机密码:${model.serverPasswd.text}";
+                final text = "本机ID:${model.serverId.text}";
                 Clipboard.setData(ClipboardData(text: text));
                 showToast(translate("Copied"));
               },
