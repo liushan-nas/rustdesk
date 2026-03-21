@@ -135,7 +135,7 @@ pub fn core_main() -> Option<Vec<String>> {
     }
     #[cfg(windows)]
     {
-        _is_quick_support |= !crate::platform::is_installed()
+        _is_quick_support |= !crate::platform::windows::is_cur_exe_the_installed()
             && args.is_empty()
             && (arg_exe.to_lowercase().contains("-qs-")
                 || config::LocalConfig::get_option("pre-elevate-service") == "Y"
@@ -161,11 +161,11 @@ pub fn core_main() -> Option<Vec<String>> {
 
     #[cfg(windows)]
     {
-        let _is_installed = crate::platform::is_installed();
+        let _is_cur_installed = crate::platform::windows::is_cur_exe_the_installed();
         let _is_elevated = crate::platform::is_elevated(None).unwrap_or(false);
-        log::info!("[PORTABLE-DIAG] is_installed={}, args_empty={}, is_quick_support={}, is_elevate={}, is_run_as_system={}, is_elevated={}, args={:?}",
-            _is_installed, args.is_empty(), _is_quick_support, _is_elevate, _is_run_as_system, _is_elevated, args);
-        if !_is_installed
+        log::info!("[PORTABLE-DIAG] is_cur_installed={}, args_empty={}, is_quick_support={}, is_elevate={}, is_run_as_system={}, is_elevated={}, args={:?}",
+            _is_cur_installed, args.is_empty(), _is_quick_support, _is_elevate, _is_run_as_system, _is_elevated, args);
+        if !_is_cur_installed
             && args.is_empty()
             && _is_quick_support
             && !_is_elevate
@@ -181,7 +181,7 @@ pub fn core_main() -> Option<Vec<String>> {
         }
     }
     #[cfg(windows)]
-    if !crate::platform::is_installed() && (_is_elevate || _is_run_as_system) {
+    if !crate::platform::windows::is_cur_exe_the_installed() && (_is_elevate || _is_run_as_system) {
         crate::platform::elevate_or_run_as_system(click_setup, _is_elevate, _is_run_as_system);
         return None;
     }
