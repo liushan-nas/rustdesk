@@ -1996,9 +1996,11 @@ pub fn elevate(arg: &str) -> ResultType<bool> {
 
 pub fn run_as_system(arg: &str) -> ResultType<()> {
     let exe = std::env::current_exe()?.to_string_lossy().to_string();
+    log::info!("[PORTABLE] run_as_system: exe={}, arg={}", exe, arg);
     if impersonate_system::run_as_system(&exe, arg).is_err() {
         bail!(format!("Failed to run {} as system", exe));
     }
+    log::info!("[PORTABLE] run_as_system: process created successfully");
     Ok(())
 }
 
@@ -2021,24 +2023,35 @@ pub fn elevate_or_run_as_system(is_setup: bool, is_elevate: bool, is_run_as_syst
     } else {
         "--run-as-system"
     };
+    log::info!("elevate_or_run_as_system: is_root={}, is_setup={}, is_elevate={}, is_run_as_system={}",
+        is_root(), is_setup, is_elevate, is_run_as_system);
     if is_root() {
         if is_run_as_system {
-            log::info!("run portable service");
+            log::info!("[PORTABLE] SYSTEM process starting portable service");
             crate::portable_service::server::run_portable_service();
+            log::info!("[PORTABLE] run_portable_service returned");
+        } else {
+            log::warn!("[PORTABLE] is_root=true but is_run_as_system=false, not starting portable service");
         }
     } else {
         match is_elevated(None) {
             Ok(elevated) => {
                 if elevated {
                     if !is_run_as_system {
+                        log::info!("[PORTABLE] Elevated process, calling run_as_system({})", arg_run_as_system);
+                        let exe = std::env::current_exe().map(|e| e.to_string_lossy().to_string()).unwrap_or_default();
+                        log::info!("[PORTABLE] exe path: {}", exe);
                         if run_as_system(arg_run_as_system).is_ok() {
+                            log::info!("[PORTABLE] run_as_system succeeded, exiting");
                             std::process::exit(0);
                         } else {
                             log::error!(
-                                "Failed to run as system, error {}",
+                                "[PORTABLE] Failed to run as system, error {}",
                                 io::Error::last_os_error()
                             );
                         }
+                    } else {
+                        log::warn!("[PORTABLE] Elevated but is_run_as_system=true, doing nothing");
                     }
                 } else {
                     if !is_elevate {

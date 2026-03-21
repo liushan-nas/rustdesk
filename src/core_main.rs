@@ -150,6 +150,8 @@ pub fn core_main() -> Option<Vec<String>> {
         }
     }
     hbb_common::init_log(false, &log_name);
+    log::info!("[PORTABLE-DIAG] init: is_quick_support={}, is_elevate={}, is_run_as_system={}, args={:?}, arg_exe={}", 
+        _is_quick_support, _is_elevate, _is_run_as_system, args, arg_exe);
 
     // linux uni (url) go here.
     #[cfg(all(target_os = "linux", feature = "flutter"))]
@@ -158,15 +160,24 @@ pub fn core_main() -> Option<Vec<String>> {
     }
 
     #[cfg(windows)]
-    if !crate::platform::is_installed()
-        && args.is_empty()
-        && _is_quick_support
-        && !_is_elevate
-        && !_is_run_as_system
     {
-        use crate::portable_service::client;
-        if let Err(e) = client::start_portable_service(client::StartPara::Direct) {
-            log::error!("Failed to start portable service: {:?}", e);
+        let _is_installed = crate::platform::is_installed();
+        let _is_elevated = crate::platform::is_elevated(None).unwrap_or(false);
+        log::info!("[PORTABLE-DIAG] is_installed={}, args_empty={}, is_quick_support={}, is_elevate={}, is_run_as_system={}, is_elevated={}, args={:?}",
+            _is_installed, args.is_empty(), _is_quick_support, _is_elevate, _is_run_as_system, _is_elevated, args);
+        if !_is_installed
+            && args.is_empty()
+            && _is_quick_support
+            && !_is_elevate
+            && !_is_run_as_system
+        {
+            log::info!("[PORTABLE-DIAG] Auto-starting portable service");
+            use crate::portable_service::client;
+            if let Err(e) = client::start_portable_service(client::StartPara::Direct) {
+                log::error!("[PORTABLE-DIAG] Failed to start portable service: {:?}", e);
+            }
+        } else {
+            log::info!("[PORTABLE-DIAG] Skipping portable service start: conditions not met");
         }
     }
     #[cfg(windows)]

@@ -702,6 +702,11 @@ fn run(vs: VideoService) -> ResultType<()> {
             if crate::platform::windows::desktop_changed()
                 && !crate::portable_service::client::running()
             {
+                // Try to switch to the new desktop (e.g., secure desktop for UAC)
+                if crate::platform::windows::try_change_desktop() {
+                    log::info!("Desktop changed, switched successfully, recreating capturer");
+                    bail!("SWITCH");
+                }
                 bail!("Desktop changed");
             }
         }

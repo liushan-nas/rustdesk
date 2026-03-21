@@ -120,14 +120,17 @@ impl SharedMemory {
     fn flink(name: String) -> ResultType<String> {
         let mut dir = crate::platform::user_accessible_folder()?;
         dir = dir.join(hbb_common::config::APP_NAME.read().unwrap().clone());
+        log::info!("[PORTABLE-SHMEM] flink dir: {:?}, exists: {}", dir, dir.exists());
         if !dir.exists() {
             std::fs::create_dir(&dir)?;
             set_path_permission(&dir, "F").ok();
         }
-        Ok(dir
+        let path = dir
             .join(format!("shared_memory{}", name))
             .to_string_lossy()
-            .to_string())
+            .to_string();
+        log::info!("[PORTABLE-SHMEM] flink path: {}", path);
+        Ok(path)
     }
 }
 
@@ -235,10 +238,17 @@ pub mod server {
     }
 
     pub fn run_portable_service() {
-        let shmem = match SharedMemory::open_existing(SHMEM_NAME) {
-            Ok(shmem) => Arc::new(shmem),
+        log::info!("[PORTABLE-SERVER] run_portable_service called, user={}, is_root={}",
+            crate::username(), crate::platform::is_root());
+        let shmem_name = SHMEM_NAME;
+        log::info!("[PORTABLE-SERVER] Opening shared memory: {}", shmem_name);
+        let shmem = match SharedMemory::open_existing(shmem_name) {
+            Ok(shmem) => {
+                log::info!("[PORTABLE-SERVER] Shared memory opened successfully");
+                Arc::new(shmem)
+            },
             Err(e) => {
-                log::error!("Failed to open existing shared memory: {:?}", e);
+                log::error!("[PORTABLE-SERVER] Failed to open existing shared memory: {:?}", e);
                 return;
             }
         };
@@ -440,9 +450,12 @@ pub mod server {
         use DataPortableService::*;
 
         let postfix = IPC_SUFFIX;
+        let ipc_path = hbb_common::config::Config::ipc_path(postfix);
+        log::info!("[PORTABLE-SERVER] IPC client connecting to: {}", ipc_path);
 
         match ipc::connect(1000, postfix).await {
             Ok(mut stream) => {
+                log::info!("[PORTABLE-SERVER] IPC client connected successfully");
                 let mut timer =
                     crate::rustdesk_interval(tokio::time::interval(Duration::from_secs(1)));
                 let mut nack = 0;
@@ -509,10 +522,12 @@ pub mod server {
                 }
             }
             Err(e) => {
-                log::error!("Failed to connect portable service ipc: {:?}", e);
+                log::error!("[PORTABLE-SERVER] Failed to connect portable service ipc: {:?}", e);
+                log::error!("[PORTABLE-SERVER] IPC path was: {}", ipc_path);
             }
         }
 
+        log::info!("[PORTABLE-SERVER] IPC client exiting");
         *EXIT.lock().unwrap() = true;
     }
 }
@@ -537,7 +552,7 @@ pub mod client {
     }
 
     pub(crate) fn start_portable_service(para: StartPara) -> ResultType<()> {
-        log::info!("start portable service");
+        log::info!("[PORTABLE-CLIENT] start_portable_service called");
         if RUNNING.lock().unwrap().clone() {
             bail!("already running");
         }
@@ -559,6 +574,7 @@ pub mod client {
                 }
             }
             let shmem_size = utils::align(ADDR_CAPTURE_FRAME + max_pixel * 4, align);
+            log::info!("[PORTABLE-CLIENT] Creating shared memory, name={}, size={}", SHMEM_NAME, shmem_size);
             // os error 112, no enough space
             *SHMEM.lock().unwrap() = Some(crate::portable_service::SharedMemory::create(
                 crate::portable_service::SHMEM_NAME,
@@ -573,13 +589,16 @@ pub mod client {
         }
         match para {
             StartPara::Direct => {
+                let exe_path = std::env::current_exe()?.to_string_lossy().to_string();
+                log::info!("[PORTABLE-CLIENT] Launching child process: {} --portable-service", exe_path);
                 if let Err(e) = crate::platform::run_background(
-                    &std::env::current_exe()?.to_string_lossy().to_string(),
+                    &exe_path,
                     "--portable-service",
                 ) {
                     *SHMEM.lock().unwrap() = None;
                     bail!("Failed to run portable service process: {}", e);
                 }
+                log::info!("[PORTABLE-CLIENT] Child process launched successfully");
             }
             StartPara::Logon(username, password) => {
                 #[allow(unused_mut)]
@@ -770,10 +789,14 @@ pub mod client {
         let rx = Arc::new(tokio::sync::Mutex::new(rx));
         let postfix = IPC_SUFFIX;
         let quick_support = QUICK_SUPPORT.lock().unwrap().clone();
+        let ipc_path = hbb_common::config::Config::ipc_path(postfix);
+        log::info!("[PORTABLE-CLIENT] IPC server starting at: {}", ipc_path);
 
         match new_listener(postfix).await {
-            Ok(mut incoming) => loop {
-                {
+            Ok(mut incoming) => {
+                log::info!("[PORTABLE-CLIENT] IPC server listening successfully");
+                loop {
+                    {
                     tokio::select! {
                         Some(result) = incoming.next() => {
                             match result {
@@ -850,7 +873,7 @@ pub mod client {
                         }
                     }
                 }
-            },
+            }},
             Err(err) => {
                 log::error!("Failed to start portable service ipc server: {}", err);
             }

@@ -329,12 +329,24 @@ extern "C"
     bool
     selectInputDesktop()
     {
-        // - Open the input desktop
+        // - Open the input desktop with full permissions first
         HDESK desktop = OpenInputDesktop(0, FALSE,
                                          DESKTOP_CREATEMENU | DESKTOP_CREATEWINDOW |
                                              DESKTOP_ENUMERATE | DESKTOP_HOOKCONTROL |
                                              DESKTOP_WRITEOBJECTS | DESKTOP_READOBJECTS |
                                              DESKTOP_SWITCHDESKTOP | GENERIC_WRITE);
+        if (!desktop)
+        {
+            // Fallback: try with reduced permissions (enough for screen capture)
+            desktop = OpenInputDesktop(0, FALSE,
+                                       DESKTOP_READOBJECTS | DESKTOP_ENUMERATE |
+                                           DESKTOP_WRITEOBJECTS | DESKTOP_SWITCHDESKTOP);
+        }
+        if (!desktop)
+        {
+            // Minimal fallback: read-only access
+            desktop = OpenInputDesktop(0, FALSE, GENERIC_READ);
+        }
         if (!desktop)
         {
             return false;
